@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="PulmoVision XAI research workspace for chest X-ray model exploration.">
+  <title>PulmoVision XAI — Imaging workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=2">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="PulmoVision home">
+    <span class="brand-mark">P</span><span class="brand-name">pulmo<span>vision</span><small>EXPLAINABLE AI WORKSPACE</small></span>
+  </a>
+  <div class="top-right"><span class="status-dot" id="status-dot"></span><span id="model-status" role="status">Connecting to model…</span><span class="top-divider"></span><span class="env-label">RESEARCH ENVIRONMENT</span></div>
+</header>
+<main class="container">
+  <section class="intro">
+    <div class="intro-copy">
+      <div class="eyebrow"><span class="eyebrow-line"></span> COMPUTER VISION · MODEL EXPLORER</div>
+      <h1>Understand what the model <span>sees.</span></h1>
+      <p>Upload a chest X-ray to explore an experimental classification output and its Grad-CAM visual explanation.</p>
+    </div>
+    <div class="intro-chip"><span class="chip-icon">✳</span><span><b>Explainable AI</b><small>Prediction + visual attribution</small></span></div>
+  </section>
+
+  <section class="workspace" aria-label="X-ray analysis workspace">
+    <aside class="card upload-card">
+      <div class="card-heading"><div><span class="overline">STEP 01</span><h2>Image input</h2></div><span class="heading-icon">↥</span></div>
+      <p class="section-help">Choose a chest X-ray image from your device.</p>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose or drop a chest X-ray image">
+        <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="upload-art"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 16.5v2A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-2"/></svg></div>
+        <h3>Drag and drop your image</h3><p>or <button type="button" id="browse-btn" class="inline-link">browse files</button></p>
+        <span class="file-hint">JPG, PNG or WEBP · UP TO 12 MB</span>
+      </div>
+      <div id="preview-wrap" class="preview-wrap hidden">
+        <div class="preview-header"><span>SELECTED IMAGE</span><button type="button" id="remove-btn" class="remove-btn">Remove image ×</button></div>
+        <div class="preview-frame"><img id="preview" alt="Selected chest X-ray preview"></div>
+        <div class="file-meta"><span class="file-badge">IMG</span><span id="file-name"></span></div>
+      </div>
+      <button id="analyze-btn" class="primary-btn" disabled><span class="btn-spinner hidden" id="btn-spinner"></span><span class="btn-label">Analyze image</span><span class="btn-arrow">→</span></button>
+      <p class="privacy-note"><span>▣</span> Processed by this application. Images are not intentionally saved.</p>
+      <div class="input-checks"><div><span class="check-mark">✓</span> Format validation</div><div><span class="check-mark">✓</span> 12 MB upload limit</div></div>
+    </aside>
+
+    <section class="card results-card">
+      <div class="card-heading result-heading"><div><span class="overline">STEP 02</span><h2>Analysis results</h2></div><span class="local-pill"><i></i> API CONNECTED</span></div>
+      <div id="empty-state" class="empty-state">
+        <div class="empty-graphic"><div class="graphic-ring ring-one"></div><div class="graphic-ring ring-two"></div><div class="graphic-center">✳</div></div>
+        <h3>Your results will appear here</h3><p>Upload an image and select <b>Analyze image</b> to view the model output and visual explanation.</p>
+        <div class="empty-steps"><span>01 <b>Upload</b></span><span class="step-dash"></span><span>02 <b>Analyze</b></span><span class="step-dash"></span><span>03 <b>Explore</b></span></div>
+      </div>
+      <div id="loading-state" class="loading-state hidden" role="status" aria-live="polite"><div class="loader"></div><h3>Analyzing image</h3><p>Running the classifier and generating Grad-CAM visualization…</p></div>
+      <div id="error-state" class="error-state hidden" role="alert"><span class="error-icon">!</span><div><b>Analysis could not be completed</b><p id="error-message">Please try again.</p></div></div>
+      <div id="results" class="results hidden">
+        <div class="prediction-card">
+          <div class="prediction-main"><span class="overline">MODEL CLASSIFICATION</span><div class="prediction-title"><span id="prediction-symbol" class="prediction-symbol">●</span><strong id="prediction-label">—</strong></div><p id="prediction-description">Experimental model output</p></div>
+          <div class="score-block"><strong id="confidence-value">—</strong><span>MODEL SCORE</span></div>
+        </div>
+        <div class="score-track"><span id="confidence-meter"></span></div>
+        <div class="score-caption"><span>Predicted class score</span><span id="score-note">Not a clinical probability</span></div>
+        <div class="visual-section">
+          <div class="visual-title"><div><span class="overline">STEP 03 · EXPLAINABILITY</span><h3>Grad-CAM visualization</h3></div><span id="layer-name" class="layer-label">—</span></div>
+          <div class="view-switch" role="group" aria-label="Visualization mode">
+            <button type="button" class="tab active" data-view="overlay">Overlay</button><button type="button" class="tab" data-view="heatmap">Heatmap</button><button type="button" class="tab" data-view="original">Original</button>
+          </div>
+          <div class="image-stage"><img id="result-image" alt="Grad-CAM visualization"><span class="image-tag" id="image-tag">OVERLAY VIEW</span></div>
+          <div class="legend"><span class="legend-gradient"></span><span>Lower activation</span><span>Higher activation</span></div>
+          <p class="explain-note">The heatmap highlights image regions that influenced the model output. It is not a lesion outline, probability map, or proof of disease.</p>
+        </div>
+        <div class="technical-grid"><div><span>CLASS INDEX</span><b id="class-index">—</b></div><div><span>INPUT SIZE</span><b>128 × 128</b></div><div><span>METHOD</span><b>Grad-CAM</b></div></div>
+        <button type="button" id="reset-btn" class="secondary-btn">Analyze another image <span>↗</span></button>
+      </div>
+    </section>
+  </section>
+
+  <section class="notice">
+    <div class="notice-icon">i</div><div><b>Research and education only — not for medical use</b><p>PulmoVision is an experimental AI project, not a medical device. It must not be used to diagnose, screen, or guide treatment. Model outputs may be incorrect and can vary across equipment and patient populations. Please consult a qualified healthcare professional for medical interpretation.</p></div>
+  </section>
+  <footer><span class="footer-brand">PULMOVISION <b>XAI</b></span><span>BUILT FOR MODEL TRANSPARENCY <i>·</i> NOT A CLINICAL SYSTEM</span></footer>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/static/app.js?v=2" defer></script>
+</body></html>
