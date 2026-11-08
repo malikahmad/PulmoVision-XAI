@@ -1,13 +1,34 @@
-# PulmoVision XAI — VS Code Project
+# PulmoVision XAI — Explainable Chest X-ray Classification Demo
 
-A local FastAPI application for the binary chest X-ray CNN in `Explainable_AI_4.ipynb`, with a responsive animated interface and Grad-CAM visualization.
+PulmoVision XAI is a local FastAPI application for a binary chest X-ray CNN. It exposes model inference through an API and provides Grad-CAM visualizations to help inspect image regions associated with the model output.
 
-> **Important:** This is an educational/research demonstration, not a medical device. Do not use it for diagnosis, screening, triage, or treatment decisions.
+> **Medical safety notice:** This is an educational and research demonstration, not a medical device. Do not use it for diagnosis, screening, triage, or treatment decisions. It is not a substitute for evaluation by a qualified clinician.
 
-## 1. Project structure
+## Features
+
+- FastAPI backend with a browser-based interface.
+- Binary chest X-ray classification workflow.
+- Grad-CAM heatmap and overlay generation.
+- Model health endpoint.
+- Configurable model path.
+- Training script for a local dataset.
+- Evaluation output saved by the training workflow.
+
+## Technology
+
+| Area | Technology |
+|---|---|
+| Language | Python |
+| Deep learning | TensorFlow / Keras |
+| API | FastAPI, Uvicorn |
+| Explainability | Grad-CAM |
+| Image processing | Pillow, OpenCV, NumPy |
+| Frontend | HTML, CSS, JavaScript |
+
+## Project structure
 
 ```text
-PulmoVision_XAI_VSCode/
+PulmoVision-XAI/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
@@ -17,94 +38,71 @@ PulmoVision_XAI_VSCode/
 │       ├── styles.css
 │       └── app.js
 ├── data/
-│   └── Chest_Xray/           # place dataset here
-├── models/                   # place trained model here
+├── models/
 ├── train.py
 ├── requirements.txt
 └── README.md
 ```
 
-## 2. Open in VS Code
+## Setup
 
-1. Extract the ZIP.
-2. Open the extracted `PulmoVision_XAI_VSCode` folder in VS Code.
-3. Open Terminal → New Terminal.
+Use Python 3.10 or 3.11 with a TensorFlow build supported by your operating system.
 
-### Windows PowerShell
+Windows PowerShell:
 
 ```powershell
-py -3.10 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-TensorFlow compatibility varies by Python and operating system. Python 3.10 or 3.11 is recommended. If TensorFlow installation fails, use a supported Python environment and follow the TensorFlow installation guide.
+## Dataset layout
 
-## 3. Add the dataset
-
-Copy your dataset so it has this structure:
+Place the dataset under `data/Chest_Xray/`. The training script expects training and test directories with normal and pneumonia class folders. It accepts the historical `penumonia` spelling as well as `pneumonia`.
 
 ```text
 data/Chest_Xray/
 ├── train/
 │   ├── normal/
-│   └── penumonia/       # spelling from the source notebook is accepted
+│   └── pneumonia/
 └── test/
     ├── normal/
-    └── penumonia/
+    └── pneumonia/
 ```
 
-The code also accepts the correctly spelled `pneumonia` directory. Labels are explicitly ordered `normal` = 0 and `pneumonia` = 1.
-
-## 4. Train the model
+## Train
 
 ```powershell
 python train.py --data-dir data/Chest_Xray --epochs 15
 ```
 
-The best model is saved to `models/chest_xray.keras`, with evaluation metrics in `models/evaluation.json`.
+The training workflow saves the model to `models/chest_xray.keras` and evaluation information to `models/evaluation.json`.
 
-**Validation note:** this starter script uses the provided `test` folder as validation during training and then reports metrics on that same folder. For a trustworthy final evaluation, create separate train/validation/test folders and only evaluate once on an untouched test set.
+**Evaluation warning:** The current training script uses the provided test folder as validation during training and then reports metrics on that same folder. Those results are not an independent final test. Create separate train, validation, and untouched test splits before reporting generalization performance.
 
-## 5. Use an existing notebook model
+## Run the API
 
-If you already have the model exported from the notebook, copy it to:
-
-```text
-models/chest_xray.h5
-```
-
-Or set a custom path before launching:
-
-```powershell
-$env:MODEL_PATH="C:\path\to\your\model.h5"
-```
-
-The architecture should accept 128×128 RGB images and output one sigmoid value, matching the notebook model. The model's first layer should include the notebook's `Rescaling(1./255)` preprocessing.
-
-## 6. Run the application
+The API loads `models/chest_xray.keras` by default. To use another compatible checkpoint, set the `MODEL_PATH` environment variable.
 
 ```powershell
 uvicorn app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000`.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 API endpoints:
-- `GET /api/health` — model status
-- `POST /api/predict` — upload an X-ray image and receive prediction plus original/heatmap/overlay images
 
-## 7. Understanding the output
+- `GET /api/health` — model status.
+- `POST /api/predict` — image upload, prediction, and explainability outputs.
 
-- The sigmoid score is interpreted as the model's Pneumonia-class score.
-- Score ≥ 0.5 maps to Pneumonia; below 0.5 maps to Normal.
-- The displayed confidence is the model score for its selected class. It is **not calibrated** and should not be interpreted as a clinical probability.
-- Grad-CAM highlights image regions that contribute to the selected class score. It is not a segmentation mask, does not identify a confirmed lesion, and is not proof of model reasoning.
+## Interpreting outputs
 
-## 8. Troubleshooting
+- The sigmoid output is treated as the model's pneumonia-class score.
+- The 0.5 threshold maps scores to the two configured classes.
+- The displayed confidence is a model score, not a calibrated clinical probability.
+- Grad-CAM is a visualization aid, not a lesion segmentation or proof of clinical reasoning.
 
-- **Model not loaded:** check `models/chest_xray.h5` exists, or set `MODEL_PATH`.
-- **Grad-CAM error:** the model must contain at least one `Conv2D` layer and have a single sigmoid output.
-- **Wrong predictions:** verify the training label order is `normal` then `pneumonia`; check the model preprocessing and training distribution.
-- **TensorFlow install errors:** use Python 3.10/3.11 and a TensorFlow-supported OS/Python combination.
+## Author
+
+**Ahmad Zulfiqar** — [GitHub](https://github.com/malikahmad) · [LinkedIn](https://www.linkedin.com/in/malik-ahmad-06abb31a1/)
