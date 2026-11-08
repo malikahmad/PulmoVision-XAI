@@ -22,13 +22,13 @@ PulmoVision XAI is a local FastAPI application for a binary chest X-ray CNN. It 
 | Deep learning | TensorFlow / Keras |
 | API | FastAPI, Uvicorn |
 | Explainability | Grad-CAM |
-| Image processing | Pillow |
+| Image processing | Pillow, OpenCV, NumPy |
 | Frontend | HTML, CSS, JavaScript |
 
 ## Project structure
 
 ```text
-PulmoVision_XAI/
+PulmoVision-XAI/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
@@ -38,7 +38,6 @@ PulmoVision_XAI/
 │       ├── styles.css
 │       └── app.js
 ├── data/
-│   └── Chest_Xray/
 ├── models/
 ├── train.py
 ├── requirements.txt
@@ -60,7 +59,7 @@ pip install -r requirements.txt
 
 ## Dataset layout
 
-Place the dataset under `data/Chest_Xray/`. The training script expects training and test directories with normal and pneumonia class folders. The source project accepts the historical `penumonia` spelling as well as `pneumonia`.
+Place the dataset under `data/Chest_Xray/`. The training script expects training and test directories with normal and pneumonia class folders. It accepts the historical `penumonia` spelling as well as `pneumonia`.
 
 ```text
 data/Chest_Xray/
@@ -78,13 +77,13 @@ data/Chest_Xray/
 python train.py --data-dir data/Chest_Xray --epochs 15
 ```
 
-The training workflow saves the best model to `models/chest_xray.keras` and evaluation information to `models/evaluation.json`.
+The training workflow saves the model to `models/chest_xray.keras` and evaluation information to `models/evaluation.json`.
 
-**Evaluation warning:** The current starter workflow uses the provided test folder as validation during training and then reports metrics on that same folder. Those results are not an independent final test. Create separate train, validation, and untouched test splits before reporting generalization performance.
+**Evaluation warning:** The current training script uses the provided test folder as validation during training and then reports metrics on that same folder. Those results are not an independent final test. Create separate train, validation, and untouched test splits before reporting generalization performance.
 
 ## Run the API
 
-If you already have a compatible model checkpoint, place it at `models/chest_xray.h5` or configure `MODEL_PATH`.
+The API loads `models/chest_xray.keras` by default. To use another compatible checkpoint, set the `MODEL_PATH` environment variable.
 
 ```powershell
 uvicorn app.main:app --reload
